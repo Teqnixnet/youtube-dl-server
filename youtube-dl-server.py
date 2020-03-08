@@ -8,6 +8,9 @@ from threading import Thread
 import youtube_dl
 from pathlib import Path
 from collections import ChainMap
+from os import listdir
+from os.path import isfile, join
+from bottle import route, run, template
 
 app = Bottle()
 
@@ -28,6 +31,16 @@ app_defaults = {
 def dl_queue_list():
     return static_file('index.html', root='./')
 
+@app.route('/youtube-dl/pub', method='GET')
+def q_size():
+    downloadPath = '/youtube-dl'
+    completed = ["<p><a href='/youtube-dl/download/{}'>{}</a></p>".format(f,f) for f in listdir(downloadPath) if isfile(join(downloadPath, f))]
+    #return { "success" : True, "files" : list(completed) }
+    return template('{{name}}', name=completed)
+
+@app.route('/youtube-dl/download/:filename', method='GET')
+def server_static(filename):
+    return static_file(filename, root='/youtube-dl/')
 
 @app.route('/youtube-dl/static/:filename#.*#')
 def server_static(filename):
